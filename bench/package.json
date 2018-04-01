@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "benchmark": "^2.1.4",
+    "farmhash.wasm": "^0.1.0",
     "murmurhash3": "^0.4.0",
     "xxhash": "^0.2.4"
   },

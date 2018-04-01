@@ -4,6 +4,7 @@ const Benchmark = require('benchmark');
 const murmurhash3 = require('murmurhash3');
 const xxhash = require('xxhash');
 const farmhash = require('../index');
+const wasm = require('farmhash.wasm');
 
 function randomInteger () {
   return Math.floor(Math.random() * 2147483647);
@@ -31,12 +32,14 @@ function randomStringOfLength (length) {
   const hashes = {
     murmurhash3: {},
     xxhash: {},
-    farmhash: {}
+    farmhash: {},
+    wasm: {}
   };
   const collisions = {
     murmurhash3: 0,
     xxhash: 0,
-    farmhash: 0
+    farmhash: 0,
+    wasm: 0
   };
   for (let seed = 0; seed < iterations; seed++) {
     const murmur = murmurhash3.murmur32Sync(input, seed);
@@ -56,6 +59,13 @@ function randomStringOfLength (length) {
       collisions.farmhash++;
     } else {
       hashes.farmhash[farm] = true;
+    }
+
+    const wasmhash = wasm.hash32WithSeed(input, seed);
+    if (wasmhash in hashes.wasm) {
+      collisions.wasm++;
+    } else {
+      hashes.wasm[wasmhash] = true;
     }
   }
   console.log('Collisions:');
@@ -78,12 +88,14 @@ function randomStringOfLength (length) {
   const hashes = {
     murmurhash3: {},
     xxhash: {},
-    farmhash: {}
+    farmhash: {},
+    wasm: {}
   };
   const collisions = {
     murmurhash3: 0,
     xxhash: 0,
-    farmhash: 0
+    farmhash: 0,
+    wasm: 0
   };
   for (let i = 0; i < iterations; i++) {
     const input = randomStringOfLength(keyLength);
@@ -106,6 +118,13 @@ function randomStringOfLength (length) {
       collisions.farmhash++;
     } else {
       hashes.farmhash[farm] = true;
+    }
+
+    const wasmhash = wasm.hash32WithSeed(input, seed);
+    if (wasmhash in hashes.wasm) {
+      collisions.wasm++;
+    } else {
+      hashes.wasm[wasmhash] = true;
     }
   }
   console.log('Collisions:');
@@ -176,6 +195,50 @@ function randomStringOfLength (length) {
       .add('farmhash-hash64+seeds-buffer', function () {
         farmhash.hash64WithSeeds(inputBuffer, seed, seed2);
       })
+
+      .add('wasm-hash32-string', function () {
+        wasm.hash32(input);
+      })
+      .add('wasm-hash32-buffer', function () {
+        wasm.hash32(inputBuffer);
+      })
+      .add('wasm-hash32+seed-string', function () {
+        wasm.hash32WithSeed(input, seed);
+      })
+      .add('wasm-hash32+seed-buffer', function () {
+        wasm.hash32WithSeed(inputBuffer, seed);
+      })
+      .add('wasm-fingerprint32-string', function () {
+        wasm.fingerprint32(input);
+      })
+      .add('wasm-fingerprint32-buffer', function () {
+        wasm.fingerprint32(inputBuffer);
+      })
+      .add('wasm-fingerprint64-string', function () {
+        wasm.fingerprint64(input);
+      })
+      .add('wasm-fingerprint64-buffer', function () {
+        wasm.fingerprint64(inputBuffer);
+      })
+      .add('wasm-hash64-string', function () {
+        wasm.hash64(input);
+      })
+      .add('wasm-hash64-buffer', function () {
+        wasm.hash64(inputBuffer);
+      })
+      .add('wasm-hash64+seed-string', function () {
+        wasm.hash64WithSeed(input, seed);
+      })
+      .add('wasm-hash64+seed-buffer', function () {
+        wasm.hash64WithSeed(inputBuffer, seed);
+      })
+      .add('wasm-hash64+seeds-string', function () {
+        wasm.hash64WithSeeds(input, seed, seed2);
+      })
+      .add('wasm-hash64+seeds-buffer', function () {
+        wasm.hash64WithSeeds(inputBuffer, seed, seed2);
+      })
+
       .add('xxhash+seed', function () {
         xxhash.hash(inputBuffer, seed);
       })
